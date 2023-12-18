@@ -102,7 +102,9 @@ public class GameActivity extends AppCompatActivity {
             int i = 0;
             questionText.setText(question.getLabel());
 
-            //Afficher les réponses  - @Matéo
+            for(Answer answer : question.getAnswers()) {
+
+            }
 
 
         }

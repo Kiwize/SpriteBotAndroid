@@ -49,4 +49,53 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.976" />
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.304">
+
+        <RadioButton
+            android:id="@+id/firstAnswerRadio"
+            android:layout_width="280dp"
+            android:layout_height="50dp"
+            android:text="1"
+            app:layout_constraintBottom_toTopOf="@+id/secondAnswerRadio"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.496"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.885" />
+
+        <RadioButton
+            android:id="@+id/secondAnswerRadio"
+            android:layout_width="280dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="12dp"
+            android:text="2"
+            app:layout_constraintBottom_toTopOf="@+id/thirdAnswerRadio"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.496"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.982" />
+
+        <RadioButton
+            android:id="@+id/thirdAnswerRadio"
+            android:layout_width="280dp"
+            android:layout_height="50dp"
+            android:text="3"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.496"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </RadioGroup>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
