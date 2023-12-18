@@ -9,20 +9,16 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import fr.thomas.androiddevforbegginers.R;
-import fr.thomas.androiddevforbegginers.control.Controller;
 import fr.thomas.androiddevforbegginers.model.Player;
 
 public class MainMenuActivity extends AppCompatActivity {
 
     private TextView textView;
-
     private Player player;
 
     private TextView playerWelcome;
 
     private Button playButton;
-
-    private Controller controller;
 
     private Bundle extras;
 
@@ -30,30 +26,22 @@ public class MainMenuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+
         extras = getIntent().getExtras();
+        player = extras.getParcelable("player.model");
 
         playerWelcome = findViewById(R.id.labelPlayerWelcome);
-        controller = extras.getParcelable("controller");
-
-
-        if (extras != null) {
-            playerWelcome.setText("Bonjour " + controller.getPlayer().getName());
-        }
-
         playButton = findViewById(R.id.buttonPlay);
         playButton.setOnClickListener(v -> onPlayButtonClick());
+
+        if(player != null) {
+            playerWelcome.setText("Bonjour " + player.getName());
+        }
     }
 
     public void onPlayButtonClick() {
-
-        controller.startGame();
-
         Intent gameIntent = new Intent(this, GameActivity.class);
-        gameIntent.putExtra("player.name", extras.getString("player.name"));
-        gameIntent.putExtra("player.id",extras.getString("player.id"));
-        gameIntent.putExtra("controller", controller);
+        gameIntent.putExtra("player.model", player);
         this.startActivity(gameIntent);
-
-
     }
 }

@@ -13,29 +13,36 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import fr.thomas.androiddevforbegginers.control.Controller;
+import fr.thomas.androiddevforbegginers.util.DatabaseHelper;
 
 public class Game implements IModel, Parcelable {
 
 	private int id;
 	private int score;
-	private Player player;
 	private Random rand;
-	private Controller controller;
 
-	public Game(Controller controller, Player player) {
+	private Player player;
+	private ArrayList<Question> questions;
+
+	private DatabaseHelper dbhelper;
+
+	public Game(Player player, DatabaseHelper dbhelper) {
 		this.rand = new Random();
+		this.questions = new ArrayList<>();
 		this.player = player;
-		this.controller = controller;
 		this.score = 0;
+		this.dbhelper = dbhelper;
 	}
 
 	protected Game(Parcel in) {
 		id = in.readInt();
 		score = in.readInt();
 		player = in.readParcelable(Player.class.getClassLoader());
-		controller = in.readParcelable(Controller.class.getClassLoader());
+		dbhelper = in.readParcelable(DatabaseHelper.class.getClassLoader());
+		questions = in.readArrayList(ArrayList.class.getClassLoader());
 	}
 
 	public static final Creator<Game> CREATOR = new Creator<Game>() {
@@ -76,10 +83,10 @@ public class Game implements IModel, Parcelable {
 	 */
 	public void getRandomQuestions() {
 		// DIFFICULTY : 1 = 5 Questions / 2 = 10 Questions / 3 = 30 Questions.
-		ArrayList<Question> cq = new ArrayList<>();
+		ExecutorService executorService = Executors.newSingleThreadExecutor();
+		executorService.submit(() -> {
 		try {
-			System.out.println(controller);
-			Statement st = controller.getDatabaseHelper().getStatement(0);
+			Statement st = dbhelper.getStatement(0);
 			int count = 0;
 			ResultSet set = st.executeQuery("SELECT Count(*) as total FROM Question;");
 			if (set.next()) {
@@ -106,7 +113,7 @@ public class Game implements IModel, Parcelable {
 			sqlParams += "?";
 
 			String query = "SELECT idquestion, label FROM Question WHERE idquestion IN (" + sqlParams + ")";
-			PreparedStatement ps = controller.getDatabaseHelper().getCon().prepareStatement(query);
+			PreparedStatement ps = dbhelper.getCon().prepareStatement(query);
 			for (int i = 1; i <= qcount; i++) {
 				ps.setInt(i, selectedQuestions.get(i - 1));
 			}
@@ -115,20 +122,28 @@ public class Game implements IModel, Parcelable {
 			// Afficher les questions récupérées
 			while (rs.next()) {
 				int questionId = rs.getInt("idquestion");
-				cq.add(new Question(questionId, this.controller));
+				questions.add(new Question(questionId, dbhelper));
 			}
-
-			controller.setQuestions(cq);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
+			executorService.shutdown();
+		}
+
+		executorService.shutdown();
+		System.out.println("QUESTIONS : " + questions);
+
+		});
+
+		while(!executorService.isShutdown()) {
+
 		}
 	}
 
 	@Override
 	public boolean insert() {
 		try {
-			Statement st = controller.getDatabaseHelper().getStatement(0);
+			Statement st = dbhelper.getStatement(0);
 
 			st.executeUpdate("INSERT INTO Game (score, idplayer) VALUES ('" + score + "', " + player.getID() + ");",
 					Statement.RETURN_GENERATED_KEYS);
@@ -146,10 +161,14 @@ public class Game implements IModel, Parcelable {
 		}
 	}
 
+	public ArrayList<Question> getQuestions() {
+		return questions;
+	}
+
 	@Override
 	public boolean save() {
 		try {
-			Statement st = controller.getDatabaseHelper().getStatement(0);
+			Statement st = dbhelper.getStatement(0);
 
 			boolean res = st.execute("UPDATE Game SET score = " + score + ", idplayer=" + player.getID()
 					+ " WHERE Game.idgame=" + id + ";");
@@ -163,7 +182,7 @@ public class Game implements IModel, Parcelable {
 
 	public int getHighestScore(Player player) {
 		try {
-			Statement st = controller.getDatabaseHelper().getStatement(0);
+			Statement st = dbhelper.getStatement(0);
 			ResultSet set = st.executeQuery("SELECT Game.score FROM Game WHERE Game.idplayer = " + player.getID());
 
 			int bestScore = 0;
@@ -190,6 +209,5 @@ public class Game implements IModel, Parcelable {
 		dest.writeInt(id);
 		dest.writeInt(score);
 		dest.writeParcelable(player, flags);
-		dest.writeParcelable(controller, flags);
 	}
 }

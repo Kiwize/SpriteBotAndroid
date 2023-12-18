@@ -5,12 +5,13 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import fr.thomas.androiddevforbegginers.control.Controller;
+import fr.thomas.androiddevforbegginers.util.DatabaseHelper;
 import fr.thomas.androiddevforbegginers.util.QuestionsBuilder;
 
 public class Question implements Parcelable {
@@ -19,19 +20,19 @@ public class Question implements Parcelable {
 	private String label;
 	private int difficultyLevel;
 	private ArrayList<Answer> answers;
-	private Controller controller;
+	private DatabaseHelper dbhelper;
 
-	public Question(Controller controller, String label, ArrayList<Answer> answers) {
+	public Question(String label, ArrayList<Answer> answers, DatabaseHelper dbhelper) {
 		this.label = label;
 		this.answers = answers;
-		this.controller = controller;
+		this.dbhelper = dbhelper;
 	}
 
-	public Question(int id, Controller controller) {
+	public Question(int id, DatabaseHelper dbhelper) {
+		this.dbhelper = dbhelper;
 		try {
-			Statement st = controller.getDatabaseHelper().getStatement(0);
+			Statement st = dbhelper.getStatement(0);
 			ResultSet res = st.executeQuery("SELECT * FROM Question WHERE idquestion = " + id + ";");
-			this.controller = controller;
 			if (!res.next()) {
 				this.id = -1;
 				this.label = "";
@@ -62,7 +63,7 @@ public class Question implements Parcelable {
 		id = in.readInt();
 		label = in.readString();
 		difficultyLevel = in.readInt();
-		controller = in.readParcelable(Controller.class.getClassLoader());
+		answers = in.readArrayList(ArrayList.class.getClassLoader());
 	}
 
 	public static final Creator<Question> CREATOR = new Creator<Question>() {
@@ -132,6 +133,10 @@ public class Question implements Parcelable {
 		return difficultyLevel;
 	}
 
+	public void setDbhelper(DatabaseHelper dbhelper) {
+		this.dbhelper = dbhelper;
+	}
+
 	@Override
 	public int describeContents() {
 		return 0;
@@ -142,5 +147,6 @@ public class Question implements Parcelable {
 		dest.writeInt(id);
 		dest.writeString(label);
 		dest.writeInt(difficultyLevel);
+		dest.writeList(answers);
 	}
 }

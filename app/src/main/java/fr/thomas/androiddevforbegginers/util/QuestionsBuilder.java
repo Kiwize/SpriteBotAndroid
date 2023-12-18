@@ -5,12 +5,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 
-import fr.thomas.androiddevforbegginers.control.Controller;
 import fr.thomas.androiddevforbegginers.model.Answer;
 import fr.thomas.androiddevforbegginers.model.Question;
 
@@ -46,7 +42,7 @@ public class QuestionsBuilder {
 	 * @return ArrayList<Question> Questions chargées depuis le fichier
 	 * @author Thomas PRADEAU
 	 */
-	public static ArrayList<Question> readQuestions(Controller controller, String filePath) {
+	public static ArrayList<Question> readQuestions(String filePath, DatabaseHelper dbhelper) {
 		try {
 			ArrayList<Question> questions = new ArrayList<Question>();
 			String content = readFromInputStream(filePath);
@@ -67,7 +63,7 @@ public class QuestionsBuilder {
 					answers.add(new Answer(getCharForNumber(i).toLowerCase().charAt(0), elements[i], response));
 				}
 
-				Question questionModel = new Question(controller, elements[0], answers);
+				Question questionModel = new Question(elements[0], answers, dbhelper);
 				questions.add(questionModel);
 			}
 

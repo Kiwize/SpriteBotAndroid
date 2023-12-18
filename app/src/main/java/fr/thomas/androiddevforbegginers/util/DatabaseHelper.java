@@ -10,10 +10,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import fr.thomas.androiddevforbegginers.control.Controller;
 
-public class DatabaseHelper implements Parcelable {
+public class DatabaseHelper {
 
     private String bdname = "";
     private String url = "";
@@ -33,68 +36,81 @@ public class DatabaseHelper implements Parcelable {
         username="_gateway";
         password="dev";
 
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-        new Thread(() -> {
+        executorService.submit(() -> {
+            try {
+                Class.forName("com.mysql.jdbc.Driver");
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                executorService.shutdownNow();
+            }
+
             try {
                 this.url += this.bdname;
                 this.con = DriverManager.getConnection(url, username, password);
-
+                System.out.println("Connexion initialization : " + con);
                 activeStatements = new ArrayList<Statement>();
                 for (int i = 0; i < ACTIVE_STATEMENT_COUNT; i++) {
                     activeStatements.add(con.createStatement());
                 }
-
-            } catch (SQLException ex) {
+            } catch(SQLException ex) {
                 ex.printStackTrace();
+                executorService.shutdownNow();
             }
-        }).start();
+
+            System.out.println("Instanciation ============> " + activeStatements);
+            executorService.shutdown();
+        });
+
+        while(!executorService.isShutdown()) {
+            //System.out.println("Waiting for connexion...");
+            System.out.println(executorService.isTerminated());
+        }
+
     }
 
     protected DatabaseHelper(Parcel in) {
-        bdname = in.readString();
-        url = in.readString();
-        username = in.readString();
-        password = in.readString();
+        bdname = "quizzgame_proto0";
+        url="jdbc:mysql://192.168.122.19:3306/";
+        username="_gateway";
+        password="dev";
         ACTIVE_STATEMENT_COUNT = in.readInt();
 
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-        new Thread(() -> {
+        executorService.submit(() -> {
+
+            try {
+                Class.forName("com.mysql.jdbc.Driver");
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                executorService.shutdownNow();
+            }
+
             try {
                 this.url += this.bdname;
                 this.con = DriverManager.getConnection(url, username, password);
-
+                System.out.println("Connexion initialization : " + con);
                 activeStatements = new ArrayList<Statement>();
                 for (int i = 0; i < ACTIVE_STATEMENT_COUNT; i++) {
                     activeStatements.add(con.createStatement());
                 }
 
             } catch (SQLException ex) {
+                System.err.println("Cannot provide active statements...");
                 ex.printStackTrace();
+                executorService.shutdownNow();
             }
-        }).start();
+
+            executorService.shutdown();
+        });
+
+        while(!executorService.isShutdown()) {
+            //System.out.println("Waiting for connexion...");
+            System.out.println(executorService.isTerminated());
+        }
     }
-
-    public static final Creator<DatabaseHelper> CREATOR = new Creator<DatabaseHelper>() {
-        @Override
-        public DatabaseHelper createFromParcel(Parcel in) {
-            return new DatabaseHelper(in);
-        }
-
-        @Override
-        public DatabaseHelper[] newArray(int size) {
-            return new DatabaseHelper[size];
-        }
-    };
 
     public Statement create() {
         try {
@@ -123,19 +139,5 @@ public class DatabaseHelper implements Parcelable {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeString(bdname);
-        dest.writeString(url);
-        dest.writeString(username);
-        dest.writeString(password);
-        dest.writeInt(ACTIVE_STATEMENT_COUNT);
     }
 }
