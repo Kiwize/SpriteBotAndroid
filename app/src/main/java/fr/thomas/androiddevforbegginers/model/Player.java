@@ -10,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import fr.thomas.androiddevforbegginers.control.Controller;
 import fr.thomas.androiddevforbegginers.util.BCrypt;
 import fr.thomas.androiddevforbegginers.util.DatabaseHelper;
 

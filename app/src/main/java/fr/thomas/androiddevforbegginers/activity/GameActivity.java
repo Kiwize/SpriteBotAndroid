@@ -61,7 +61,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     public void onPreviousButtonClick() {
-        
+
     }
 
     public void onNextButtonClick() {
