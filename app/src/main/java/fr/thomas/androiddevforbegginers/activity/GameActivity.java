@@ -1,6 +1,7 @@
 package fr.thomas.androiddevforbegginers.activity;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -54,14 +55,16 @@ public class GameActivity extends AppCompatActivity {
             questionText.setText(question.getLabel());
         }
 
+        previousButton.setOnClickListener(v -> onPreviousButtonClick());
+        nextButton.setOnClickListener(v -> onNextButtonClick());
 
     }
 
+    public void onPreviousButtonClick() {
+        
+    }
 
+    public void onNextButtonClick() {
 
-    
-
-
-    
-
+    }
 }
