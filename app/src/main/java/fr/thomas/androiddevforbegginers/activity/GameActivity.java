@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,6 +27,12 @@ public class GameActivity extends AppCompatActivity {
     private Button previousButton;
     private Button nextButton;
 
+    private RadioButton firstAnswer;
+    private RadioButton secondAnswer;
+    private RadioButton thirdAnswer;
+
+    private RadioGroup answerRadioGroup;
+
     private DatabaseHelper dbhelper;
 
     private Bundle extras;
@@ -34,6 +42,8 @@ public class GameActivity extends AppCompatActivity {
 
     private HashMap<Question, Answer> gameHistory;
     private ArrayList<Question> gameQuestions;
+
+    private HashMap<String, Answer> answerToLabelMap;
 
     private int qpointer;
 
@@ -48,11 +58,18 @@ public class GameActivity extends AppCompatActivity {
         this.previousButton = findViewById(R.id.previousQuestionButton);
         this.nextButton = findViewById(R.id.nextQuestionButton);
 
+        this.firstAnswer = findViewById(R.id.firstAnswerRadio);
+        this.secondAnswer = findViewById(R.id.secondAnswerRadio);
+        this.thirdAnswer = findViewById(R.id.thirdAnswerRadio);
+
+        this.answerRadioGroup = findViewById(R.id.answerRadioGroup);
+
         extras = getIntent().getExtras();
         this.dbhelper = new DatabaseHelper();
 
         gameHistory = new HashMap<>();
         gameQuestions = new ArrayList<>();
+        answerToLabelMap = new HashMap<>();
 
         this.player = extras.getParcelable("player.model");
         player.setDbhelper(dbhelper);
@@ -66,6 +83,10 @@ public class GameActivity extends AppCompatActivity {
         previousButton.setOnClickListener(v -> onPreviousButtonClick());
         nextButton.setOnClickListener(v -> onNextButtonClick());
 
+        firstAnswer.setOnClickListener(v -> onAnswerButtonClick(firstAnswer.getText().toString()));
+        secondAnswer.setOnClickListener(v -> onAnswerButtonClick(secondAnswer.getText().toString()));
+        thirdAnswer.setOnClickListener(v -> onAnswerButtonClick(thirdAnswer.getText().toString()));
+
     }
 
     public void onPreviousButtonClick() {
@@ -77,6 +98,8 @@ public class GameActivity extends AppCompatActivity {
         } else {
             previousButton.setActivated(false);
         }
+
+        nextButton.setText("Suivant");
     }
 
     public void onNextButtonClick() {
@@ -87,7 +110,28 @@ public class GameActivity extends AppCompatActivity {
             questionProgressBar.setProgress(qpointer + 1, true);
         } else {
             nextButton.setActivated(false);
+
         }
+
+        if(qpointer == gameQuestions.size() - 1) {
+            nextButton.setText("Valider");
+            nextButton.setEnabled(areAllQuestionsAnswered());
+        } else {
+            nextButton.setText("Suivant");
+        }
+
+    }
+
+    public void onAnswerButtonClick(String answerLabel) {
+        gameHistory.put(loadedQuestion, answerToLabelMap.get(answerLabel));
+
+        if(qpointer == gameQuestions.size() - 1) {
+            nextButton.setEnabled(areAllQuestionsAnswered());
+        }
+    }
+
+    public void finishGame() {
+
     }
 
     public void loadUIQuestions(ArrayList<Question> questions) {
@@ -103,11 +147,16 @@ public class GameActivity extends AppCompatActivity {
             questionText.setText(question.getLabel());
 
             for(Answer answer : question.getAnswers()) {
-
+                answerToLabelMap.put(answer.getLabel(), answer);
             }
 
-
         }
+
+        loadedQuestion = questions.get(0);
+
+        firstAnswer.setText(loadedQuestion.getAnswers().get(0).getLabel());
+        secondAnswer.setText(loadedQuestion.getAnswers().get(1).getLabel());
+        thirdAnswer.setText(loadedQuestion.getAnswers().get(2).getLabel());
 
         loadQuestion(questions.get(qpointer));
     }
@@ -116,7 +165,30 @@ public class GameActivity extends AppCompatActivity {
 
         //Affichage des réponses en liste déroulante
 
+        answerRadioGroup.clearCheck();
+
+        firstAnswer.setText(question.getAnswers().get(0).getLabel());
+        secondAnswer.setText(question.getAnswers().get(1).getLabel());
+        thirdAnswer.setText(question.getAnswers().get(2).getLabel());
+
         questionText.setText(question.getLabel());
+
+        loadedQuestion = question;
+
+        try {
+            if (gameHistory.get(question) != null) {
+                for (int i = 0; i < answerRadioGroup.getChildCount(); i++) {
+                    if (((RadioButton) answerRadioGroup.getChildAt(i)).getText().equals(gameHistory.get(question).getLabel())) {
+                        ((RadioButton) answerRadioGroup.getChildAt(i)).setChecked(true);
+                    }
+                }
+            }
+        } catch (NullPointerException ex) {
+            System.err.println("An error as occurred while trying to load answers.");
+            ex.printStackTrace();
+        }
+
+        System.out.println(gameHistory.get(loadedQuestion));
     }
 
     public boolean areAllQuestionsAnswered() {
