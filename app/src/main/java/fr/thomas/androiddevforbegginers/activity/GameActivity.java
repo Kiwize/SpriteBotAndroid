@@ -65,7 +65,7 @@ public class GameActivity extends AppCompatActivity {
         this.answerRadioGroup = findViewById(R.id.answerRadioGroup);
 
         extras = getIntent().getExtras();
-        this.dbhelper = new DatabaseHelper();
+        this.dbhelper = new DatabaseHelper(this);
 
         gameHistory = new HashMap<>();
         gameQuestions = new ArrayList<>();
@@ -100,6 +100,7 @@ public class GameActivity extends AppCompatActivity {
         }
 
         nextButton.setText("Suivant");
+        nextButton.setOnClickListener(v -> onNextButtonClick());
     }
 
     public void onNextButtonClick() {
@@ -115,9 +116,11 @@ public class GameActivity extends AppCompatActivity {
 
         if(qpointer == gameQuestions.size() - 1) {
             nextButton.setText("Valider");
+            nextButton.setOnClickListener(v -> finishGame());
             nextButton.setEnabled(areAllQuestionsAnswered());
         } else {
             nextButton.setText("Suivant");
+            nextButton.setOnClickListener(v -> onNextButtonClick());
         }
 
     }
@@ -131,7 +134,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     public void finishGame() {
-
+        System.out.println("Finish game");
     }
 
     public void loadUIQuestions(ArrayList<Question> questions) {

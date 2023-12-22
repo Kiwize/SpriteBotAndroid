@@ -18,6 +18,11 @@ import fr.thomas.androiddevforbegginers.util.DatabaseHelper;
 public class LoginActivity extends AppCompatActivity {
 
     private DatabaseHelper dbhandler;
+
+    //Database connexion components
+    private Button dbConRetry;
+    private TextView dbConErrMsg;
+
     private Button loginButton;
     private TextView countViewText;
     private EditText username;
@@ -30,12 +35,41 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        dbhandler = new DatabaseHelper();
+        this.dbConErrMsg = findViewById(R.id.dbConnErrorText);
+        this.dbConRetry = findViewById(R.id.dbConRetryButton);
+
+        dbhandler = new DatabaseHelper(this);
+
         this.player = new Player("", dbhandler);
 
         loginButton = findViewById(R.id.loginButton);
+
+        if(!dbhandler.getConnexionStatus()) {
+            loginButton.setEnabled(false);
+            dbConRetry.setOnClickListener(v -> {
+                dbhandler.connect();
+                updateDatabaseComponentsStatus();
+            });
+        } else {
+            dbConRetry.setVisibility(View.INVISIBLE);
+            dbConErrMsg.setVisibility(View.INVISIBLE);
+        }
+
         username = findViewById(R.id.textBoxUsername);
         password = findViewById(R.id.textBoxPassword);
+    }
+
+    public void updateDatabaseComponentsStatus() {
+        if(!dbhandler.getConnexionStatus()) {
+            loginButton.setEnabled(false);
+            dbConRetry.setOnClickListener(v -> {
+                dbhandler.connect();
+            });
+        } else {
+            dbConRetry.setVisibility(View.INVISIBLE);
+            dbConErrMsg.setVisibility(View.INVISIBLE);
+            loginButton.setEnabled(true);
+        }
     }
 
     public void onLoginButtonClick(View v) {
