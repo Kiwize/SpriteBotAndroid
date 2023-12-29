@@ -142,22 +142,38 @@ public class Game implements IModel, Parcelable {
 
 	@Override
 	public boolean insert() {
-		try {
-			Statement st = dbhelper.getStatement(0);
+		Object lock = new Object();
+		ExecutorService executorService = Executors.newSingleThreadExecutor();
+		executorService.submit(() -> {
+			synchronized (lock) {
+				try {
+					Statement st = dbhelper.getStatement(0);
 
-			st.executeUpdate("INSERT INTO Game (score, idplayer) VALUES ('" + score + "', " + player.getID() + ");",
-					Statement.RETURN_GENERATED_KEYS);
+					st.executeUpdate("INSERT INTO Game (score, idplayer) VALUES ('" + score + "', " + player.getID() + ");",
+							Statement.RETURN_GENERATED_KEYS);
 
-			ResultSet res = st.getGeneratedKeys();
+					ResultSet res = st.getGeneratedKeys();
 
-			if (res.next()) {
-				this.id = res.getInt(1);
+					if (res.next()) {
+						this.id = res.getInt(1);
+					}
+
+					lock.notifyAll();
+				} catch (SQLException e) {
+					e.printStackTrace();
+					lock.notifyAll();
+				}
+			}
+		});
+
+		synchronized (lock) {
+			try {
+				lock.wait();
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
 			}
 
 			return true;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return false;
 		}
 	}
 

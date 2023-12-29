@@ -78,7 +78,7 @@ public class DatabaseHelper {
 
     public void connect() {
         bdname = "quizzgame_proto0";
-        url = "jdbc:mysql://192.168.122.19:3306/";
+        url = "jdbc:mysql://192.168.1.100:3306/";
         username = "_gateway";
         password = "dev";
 

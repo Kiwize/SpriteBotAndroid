@@ -1,5 +1,6 @@
 package fr.thomas.androiddevforbegginers.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -12,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import fr.thomas.androiddevforbegginers.R;
 import fr.thomas.androiddevforbegginers.model.Answer;
@@ -46,6 +48,7 @@ public class GameActivity extends AppCompatActivity {
     private HashMap<String, Answer> answerToLabelMap;
 
     private int qpointer;
+    private boolean isGameStarted;
 
     private Question loadedQuestion;
 
@@ -70,6 +73,7 @@ public class GameActivity extends AppCompatActivity {
         gameHistory = new HashMap<>();
         gameQuestions = new ArrayList<>();
         answerToLabelMap = new HashMap<>();
+        isGameStarted = false;
 
         this.player = extras.getParcelable("player.model");
         player.setDbhelper(dbhelper);
@@ -116,7 +120,7 @@ public class GameActivity extends AppCompatActivity {
 
         if(qpointer == gameQuestions.size() - 1) {
             nextButton.setText("Valider");
-            nextButton.setOnClickListener(v -> finishGame());
+            nextButton.setOnClickListener(v -> finishGame(gameHistory));
             nextButton.setEnabled(areAllQuestionsAnswered());
         } else {
             nextButton.setText("Suivant");
@@ -133,8 +137,25 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    public void finishGame() {
-        System.out.println("Finish game");
+    public void finishGame(HashMap<Question, Answer> gameHistory) {
+        //TODO Show recap view
+        isGameStarted = false;
+        int gameScoreBuffer = 0;
+
+        for (Map.Entry<Question, Answer> gameEntry : gameHistory.entrySet()) {
+            if (gameEntry.getValue().isCorrect()) {
+                gameScoreBuffer += gameEntry.getKey().getDifficulty() * 100;
+            }
+        }
+
+        game.setScore(gameScoreBuffer);
+        game.insert();
+
+        //Show updated player information's on main menu.
+        //Return to main menu activity for now.
+        Intent gameIntent = new Intent(this, MainMenuActivity.class);
+        gameIntent.putExtra("player.model", player);
+        this.startActivity(gameIntent);
     }
 
     public void loadUIQuestions(ArrayList<Question> questions) {
