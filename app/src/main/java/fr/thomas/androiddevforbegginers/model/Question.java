@@ -5,7 +5,6 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
-import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -63,7 +62,7 @@ public class Question implements Parcelable {
 		id = in.readInt();
 		label = in.readString();
 		difficultyLevel = in.readInt();
-		answers = in.readArrayList(ArrayList.class.getClassLoader());
+		answers = in.readArrayList(Answer.CREATOR.getClass().getClassLoader());
 	}
 
 	public static final Creator<Question> CREATOR = new Creator<Question>() {
@@ -90,6 +89,9 @@ public class Question implements Parcelable {
 		return label;
 	}
 
+	public int getID() {
+		return id;
+	}
 	/**
 	 * Pose la question au joueur
 	 */

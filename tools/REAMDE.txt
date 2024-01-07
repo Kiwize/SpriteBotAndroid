@@ -1,0 +1,11 @@
+Outils et programmes utilisés :
+
+> Pencil : Maquettage (https://pencil.evolus.vn/)
+
+> PowerDesigner : Diagrammes et visualisation des données (https://www.powerdesigner.biz/)
+
+> IDE : AndroidStution (https://developer.android.com/studio)
+
+> JDK : JDK 17
+
+> Gestion de projets : GanttProject (https://www.ganttproject.biz/)
