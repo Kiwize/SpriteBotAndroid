@@ -1,11 +1,5 @@
 package fr.thomas.androiddevforbegginers.util;
 
-import android.app.AlertDialog;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.sql.Connection;
@@ -13,13 +7,12 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 public class DatabaseHelper {
 
-    private String bdname = "";
     private String url = "";
     private String username = "";
     private String password = "";
@@ -27,33 +20,21 @@ public class DatabaseHelper {
     private boolean connexionStatus = false;
 
     private final Object lock;
-
     private Connection con;
 
     private final int ACTIVE_STATEMENT_COUNT = 2;
     private ArrayList<Statement> activeStatements;
 
-    public DatabaseHelper(AppCompatActivity context) {
-        lock = new Object();
-       connect();
-    }
+    private Properties mainProperties;
 
-    protected DatabaseHelper(Parcel in) {
+    public DatabaseHelper(AppCompatActivity context, Properties mainProperties) {
         lock = new Object();
+        this.mainProperties = mainProperties;
         connect();
     }
 
     public boolean getConnexionStatus() {
         return(connexionStatus && con != null);
-    }
-
-    public Statement create() {
-        try {
-            return con.createStatement();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     public Connection getCon() {
@@ -77,10 +58,9 @@ public class DatabaseHelper {
     }
 
     public void connect() {
-        bdname = "quizzgame_proto0";
-        url = "jdbc:mysql://192.168.1.100:3306/";
-        username = "_gateway";
-        password = "dev";
+        url = mainProperties.getProperty("db.url");
+        username = mainProperties.getProperty("db.user");
+        password = mainProperties.getProperty("db.password");
 
         long BEGIN_TIME = System.currentTimeMillis();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -96,7 +76,6 @@ public class DatabaseHelper {
                     }
 
                     try {
-                        this.url += this.bdname;
                         DriverManager.setLoginTimeout(5); // Wait 5 seconds for database connexion to complete.
                         this.con = DriverManager.getConnection(url, username, password);
                         activeStatements = new ArrayList<Statement>();
@@ -118,6 +97,12 @@ public class DatabaseHelper {
         synchronized (lock) {
             try {
                 lock.wait();
+                //If connexion is null, prevent login and stay on login screen
+                if(this.con == null) {
+                    System.err.println("Unable to connect database !");
+                    return;
+                }
+
                 if (System.currentTimeMillis() - BEGIN_TIME >= 4000) {
                     executorService.shutdown();
                     con.close();
@@ -131,8 +116,5 @@ public class DatabaseHelper {
                 throw new RuntimeException(e);
             }
         }
-
-
-
     }
 }

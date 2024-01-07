@@ -1,0 +1,1 @@
+MySQL connector java 5.1.49.jar (https://downloads.mysql.com/archives/get/p/3/file/mysql-connector-java-5.1.49.tar.gz)

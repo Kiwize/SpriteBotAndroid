@@ -14,7 +14,6 @@
 
 package fr.thomas.androiddevforbegginers.util;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 

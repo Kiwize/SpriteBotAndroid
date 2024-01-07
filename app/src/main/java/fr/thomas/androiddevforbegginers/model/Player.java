@@ -2,10 +2,7 @@ package fr.thomas.androiddevforbegginers.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.provider.ContactsContract;
-import android.widget.Toast;
 
-import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -40,6 +37,25 @@ public class Player implements IModel, Parcelable {
 
 	public void setDbhelper(DatabaseHelper dbhelper) {
 		this.dbhelper = dbhelper;
+	}
+
+	public int getHighestScore() {
+		try {
+			Statement st = dbhelper.getStatement(0);
+			ResultSet set = st.executeQuery("SELECT Game.score FROM Game WHERE Game.idplayer = " + this.getID());
+
+			int bestScore = 0;
+
+			while (set.next()) {
+				if (bestScore < set.getInt("score"))
+					bestScore = set.getInt("score");
+			}
+
+			return bestScore;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return -1;
+		}
 	}
 
 	@Override
@@ -125,10 +141,6 @@ public class Player implements IModel, Parcelable {
 
 	public int getID() {
 		return id;
-	}
-	
-	public String getPassword() {
-		return password;
 	}
 
 	public class UserAuthentication implements Runnable {

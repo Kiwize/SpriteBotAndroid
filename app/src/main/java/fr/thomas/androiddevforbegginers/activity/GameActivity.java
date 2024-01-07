@@ -2,7 +2,6 @@ package fr.thomas.androiddevforbegginers.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
@@ -20,6 +19,7 @@ import fr.thomas.androiddevforbegginers.model.Answer;
 import fr.thomas.androiddevforbegginers.model.Game;
 import fr.thomas.androiddevforbegginers.model.Player;
 import fr.thomas.androiddevforbegginers.model.Question;
+import fr.thomas.androiddevforbegginers.util.ConfigReader;
 import fr.thomas.androiddevforbegginers.util.DatabaseHelper;
 
 public class GameActivity extends AppCompatActivity {
@@ -34,10 +34,6 @@ public class GameActivity extends AppCompatActivity {
     private RadioButton thirdAnswer;
 
     private RadioGroup answerRadioGroup;
-
-    private DatabaseHelper dbhelper;
-
-    private Bundle extras;
 
     private Player player;
     private Game game;
@@ -67,15 +63,19 @@ public class GameActivity extends AppCompatActivity {
 
         this.answerRadioGroup = findViewById(R.id.answerRadioGroup);
 
-        extras = getIntent().getExtras();
-        this.dbhelper = new DatabaseHelper(this);
+        Bundle extras = getIntent().getExtras();
+
+        ConfigReader configReader = new ConfigReader(this);
+        DatabaseHelper dbhelper = new DatabaseHelper(this, configReader.getProperties());
 
         gameHistory = new HashMap<>();
         gameQuestions = new ArrayList<>();
         answerToLabelMap = new HashMap<>();
         isGameStarted = false;
 
+        assert extras != null;
         this.player = extras.getParcelable("player.model");
+        assert player != null;
         player.setDbhelper(dbhelper);
 
         this.game = new Game(player, dbhelper);
@@ -153,8 +153,9 @@ public class GameActivity extends AppCompatActivity {
 
         //Show updated player information's on main menu.
         //Return to main menu activity for now.
-        Intent gameIntent = new Intent(this, MainMenuActivity.class);
+        Intent gameIntent = new Intent(this, GameRecapActivity.class);
         gameIntent.putExtra("player.model", player);
+        gameIntent.putExtra("game.history", gameHistory);
         this.startActivity(gameIntent);
     }
 
